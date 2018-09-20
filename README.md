@@ -19,3 +19,5 @@ This project will include the following technologies:
 * ant-design
 
 The timeline on this project is not more than two weeks though less will also work if your schedule permits.  To test correctness of the component, we will go over the UI and then I will run an alternate JSON data set (same data format) through your component.
+
+And Design is located at https://ant.design/.  Please use version 3.5.1.
