@@ -1,0 +1,10 @@
+div .color-tag {
+	margin-left: 10px;
+	background-color: red;
+	width: 10px;
+	height: 50px;
+}
+
+.task div:nth-child(2) {
+	text-align: left;
+}

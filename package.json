@@ -1,0 +1,47 @@
+{
+  "name": "typescript-react-starter",
+  "version": "0.0.1",
+  "description": "A jumping off point for frontend apps built with react and typescript",
+  "main": "index.tsx",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "start": "node devServer",
+    "build": "npm run clean && NODE_ENV='production' PORT=3000 webpack",
+    "freshnm": "rm -rf node_modules && yarn"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blaqbern/typescript-react-starter"
+  },
+  "keywords": [
+    "React",
+    "TypeScript"
+  ],
+  "author": "Chris Blackburn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blaqbern/typescript-react-starter"
+  },
+  "homepage": "https://github.com/blaqbern/typescript-react-starter#readme",
+  "devDependencies": {
+    "@types/react-hot-loader": "^4.1.0",
+    "css-loader": "^1.0.0",
+    "file-loader": "^1.1.11",
+    "react-hot-loader": "^4.3.4",
+    "style-loader": "^0.21.0",
+    "ts-loader": "^4.4.2",
+    "tslint": "^5.11.0",
+    "tslint-loader": "^3.6.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.16.5",
+    "webpack-command": "^0.4.1",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "dependencies": {
+    "@types/react": "^16.4.8",
+		"@types/react-dom": "^16.0.7",
+		"antd": "^3.9.3",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2"
+  }
+}
