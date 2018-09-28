@@ -21,6 +21,7 @@ const { tasks } = require('./tasks.js');
 				"_id": "t1",
 				"name": "Task 1",
 				"duration": 60,
+				"due": "2018-09-25T21:24:49.975Z",
 				"user": {
 					"_id": "u1",
 					"name": "Nathan Douglas"
@@ -30,6 +31,7 @@ const { tasks } = require('./tasks.js');
 				"_id": "t1",
 				"name": "Task 1",
 				"duration": 30,
+				"due": "2018-09-25T21:24:49.975Z",
 				"user": {
 					"_id": "u1",
 					"name": "Nathan Douglas"
@@ -38,7 +40,8 @@ const { tasks } = require('./tasks.js');
 			{
       "_id": "t2",
       "name": "Task 2",
-      "duration": 30,
+			"duration": 30,
+			"due": "2018-09-29T21:24:49.975Z",
       "user": {
         "_id": "u2",
         "name": "Mark Bradley"
@@ -50,6 +53,7 @@ const { tasks } = require('./tasks.js');
 			{
 				"name": "Task 1",
 				"time": 90,
+				"due": "2018-09-25T21:24:49.975Z",
 				"users": {
 					"u1": {
 						"duration": 90,
@@ -60,6 +64,7 @@ const { tasks } = require('./tasks.js');
 			{
 				"name": "Task 2",
 				"time": 30,
+				"due": "2018-09-29T21:24:49.975Z",
 				"users": {
 					"u2": {
 						"duration": 30,
@@ -92,7 +97,7 @@ tasks.forEach(t => {
 		// Add new task
 		const userMap = {};
 		userMap[t.user._id] = { duration: t.duration, name: t.user.name };
-		taskMap[t._id] = {name: t.name, time: t.duration, users : userMap};
+		taskMap[t._id] = { due: t.due, name: t.name, time: t.duration, users : userMap};
 	}
 });
 
@@ -100,7 +105,7 @@ tasks.forEach(t => {
 // Map tasks to an array
 const taskArray = Object.keys(taskMap).map(task_id => taskMap[task_id]);
 
-// console.log(JSON.stringify(taskArray,null, 2));
+console.log(JSON.stringify(taskArray,null, 2));
 
 
 /** Helpers? **/
@@ -130,3 +135,20 @@ taskArray.map(task => {
 			// console.log(task.name, toPrint);
 		});
 });
+
+
+
+/** To get some dummy data**/
+// let count = 1;
+// let d;
+// let inter = setInterval(() => {
+// 	if(count > 5) {
+// 		clearInterval(inter);
+// 	}
+// 	else {
+// 		d = new Date()
+// 		console.log(d.toISOString());
+// 		count++;
+// 	}
+// }, 1000);
+
