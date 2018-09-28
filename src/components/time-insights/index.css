@@ -1,7 +1,37 @@
-div .color-tag {
+.timeInsights {
+	padding: 10px;
+}
+
+.timeInsightsHeader {
+	display: flex;
+	justify-content: space-around;
+}
+
+.left {
+	order: 1;
+	justify-content: center;
+}
+
+.right {
+	order: 2;
+}
+
+.taskAvatar {
+	display: flex;
+	flex-direction: row;
+}
+
+.taskAvatar .colorTag {
 	margin-left: 10px;
 	background-color: red;
 	width: 10px;
+	height: 50px;
+}
+
+.taskAvatar .percentTime {
+	margin-left: 10px;
+	color: black;
+	width: 50px;
 	height: 50px;
 }
 

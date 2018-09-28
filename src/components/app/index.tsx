@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import TimeInsights from '../time-insights';
-import './App.css';
+import './index.css';
 
 import dataStream from '../../tasks';
 
