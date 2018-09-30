@@ -5,8 +5,8 @@ import './index.css';
 import * as moment from 'moment';
 
 
-/** Shape for "raw" Task */
-interface Task {
+/** Shape for "raw" Task (rTask) */
+interface rTask {
 	_id: string,
 	duration: number,
 	name: string,
@@ -17,29 +17,36 @@ interface Task {
 	}
 }
 
-type Props = {
-	data: Task[];
-};
+/** Shape for "intermediate" Task (iTask) */
 
-/** Shape for "processed" Task (pTask) */
-
-interface pTask {
+interface iTask {
 	name: string,
-	time: number,
+	duration: number,
 	due: string,
-	users: Map<string, User>
+	users: Map<string, User>;
 }
+
+function isITask(item: iTask | undefined): item is iTask {
+	return item !== undefined;
+}
+
+/** Shape for "final" Task (fTask) */
+
+interface fTask {
+	name: string,
+	duration: number,
+	due: string,
+	users: User[]
+}
+
+/** Shape for user */
 
 interface User {
 	duration: number, 
 	name: string
 }
 
-function isPTask(item: pTask | undefined): item is pTask {
-	return item !== undefined;
-}
-
-/** Shapes for State */
+/** Shapes for State & Props */
 
 const initialState = {
 	dateFilter : "all",
@@ -50,33 +57,41 @@ const initialState = {
 
 type State = Readonly<typeof initialState>;
 
-/** setState functions */
-
-
+type Props = {
+	data: rTask[];
+};
 
 /** Static Methods */
 
-const makeTaskList = (taskMap: Map<string, pTask>) : pTask[] => {
-	const list : pTask[] = [];
+const makeTaskList = (taskMap: Map<string, iTask>) : fTask[] => {
+	const list : fTask[] = [];
 	taskMap.forEach(item => {
-		if(isPTask(item)) {
-			list.push(item);
+		if(isITask(item)) {
+			let userArray : User[] = [];
+			item.users.forEach(user => {
+				userArray.push(user);
+			});
+			userArray.sort((a,b) => b.duration - a.duration);
+			const fTask : fTask = {
+				...item,
+				users: userArray
+			};
+			list.push(fTask);
 		}
 	})
 	return list;
 };
 
-const processTasks = (data: Task[]) : pTask[] => {
+const processTasks = (data: rTask[]) : fTask[] => {
 
-	const taskMap : Map<string, pTask> = new Map<string, pTask>();
+	const taskMap : Map<string, iTask> = new Map<string, iTask>();
 
 	data.forEach(t => {
 		//look up task
 		let task = taskMap.get(t._id);
 		if(task) {
 			// update task...
-			task.time += t.duration;
-
+			task.duration += t.duration;
 			// look up user
 			let user = task.users.get(t.user._id);
 			if(user) {
@@ -91,46 +106,34 @@ const processTasks = (data: Task[]) : pTask[] => {
 			// set new task
 			const newUserMap : Map<string, User> = new Map<string, User>();
 			newUserMap.set(t.user._id, {duration: t.duration, name: t.user.name});
-			taskMap.set(t._id, {name: t.name, due: t.due, time: t.duration, users : newUserMap});
+			taskMap.set(t._id, {name: t.name, due: t.due, duration: t.duration, users : newUserMap});
 		}
 	});
 
-	const tasks : pTask[] = makeTaskList(taskMap);
+	const tasks : fTask[] = makeTaskList(taskMap);
 
 	return tasks;
 }
 
-/** Helpers **/
+/** HELPERS **/
 
 // Total Time
-const getTotalTime = (tasks: pTask[]) : number => {
-	const timeReducer = (acc : number, c : pTask ) => acc + c.time;
+const getTotalTime = (tasks: fTask[]) : number => {
+	const timeReducer = (acc : number, c : fTask ) => acc + c.duration;
 	const total = tasks.reduce(timeReducer, 0);
 	return total;
 }
 
 // Legend render
-const generateLegend = (tasks : pTask[], colors: string[], total: number) => {
+const generateLegend = (tasks : fTask[], colors: string[], total: number) => {
 	return (
 	<div className="timeInsightsLegend">{
-		tasks.map((t, key) => <div key={key} style={{display: 'inline-block', background: colors.pop(), height: '10px', width: `${(t.time/total * 100).toFixed(1)}%` }}></div>)
+		tasks.map((t, key) => <div key={key} style={{display: 'inline-block', background: colors.pop(), height: '10px', width: `${(t.duration/total * 100).toFixed(1)}%` }}></div>)
 	}</div>
 	);
 }
 
-// Task Render Function
-const task = (total: number, colors: string[]) => (task: pTask) => (
-	<List.Item>
-		<List.Item.Meta
-			title={task.name}
-			description={generateDescription(task.users)}
-			avatar={generateAvatar(task.time, total, colors.pop())}
-			className="task"
-		/>
-	</List.Item>
-);
-
-// Task Render Helpers
+/** Task Render Helpers **/
 const generateAvatar = (time : number, total: number, color: string | undefined) => {
 	return (
 		<div className="taskAvatar">
@@ -140,30 +143,38 @@ const generateAvatar = (time : number, total: number, color: string | undefined)
 	);
 }
 
-const generateDescription = (users: Map<string, User>) : string => {
-	let description = "";
-	users.forEach( user => description+=`${user.duration/60} hrs by ${user.name}, `);
-	return description.slice(0, -2); //remove trailing comma
-}
-
-const updateFilter = (prevState: State, event: React.MouseEvent<HTMLElement>) => {
-	// console.log(event);
-	// return {
-	// 	...prevState, 
-	// 	filter : value
-	// }
-}
-
-const updateSearchTerm = (prevState: State, searchInput: string) : State =>{
-	return {
-		...prevState, searchInput
+const generateDescription = (users: User[]) : string => {
+	let description = `${users[0].duration/60} hrs by ${users[0].name}`;
+	if(users.length > 1) {
+		description += `, +${users.length - 1}`;
 	}
+	return description;
 }
 
-const changeDate = (prevState: State, date: moment.Moment, dateString: string) : State => {
-	return {
-		...prevState, dateString
-	}
+// Task Render Function
+const task = (total: number, colors: string[]) => (task: fTask) => (
+	<List.Item>
+		<List.Item.Meta
+			title={task.name}
+			description={generateDescription(task.users) + ` || due: ${moment(task.due).format('MMM-DD-YYYY')}`}
+			avatar={generateAvatar(task.duration, total, colors.pop())}
+			className="task"
+		/>
+	</List.Item>
+);
+
+/** setState functions */
+// TODO: implement stubs
+const updateFilter = (prevState: State, event: React.MouseEvent<HTMLElement>) : void => {
+
+}
+
+const updateSearchTerm = (prevState: State, searchInput: string) : void =>{
+
+}
+
+const changeDate = (prevState: State, date: moment.Moment, dateString: string) : void => {
+
 }
 
 export class TimeInsights extends React.Component<Props, State> {
@@ -172,29 +183,36 @@ export class TimeInsights extends React.Component<Props, State> {
 
 
 	// setState Methods
-	private handleFilter = (event: React.MouseEvent<HTMLElement>) => this.setState(updateFilter);
-	private handleSearchInput = (input: string) => this.setState(updateSearchTerm);
-	private handleDateChange = (date: moment.Moment, dateString: string) => this.setState(changeDate);
+	private handleDateFilter = (event: React.MouseEvent<HTMLElement>) => {
+		console.log(event);
+	};
+	private handleSearchInput = (input: string) => {
+		console.log(input)
+	};
+	private handleDatePicker = (date: moment.Moment, dateString: string) => {
+		console.log(date, dateString);
+	};
 
 	render() {
-		const { filter } = this.state;
+		const { dateFilter } = this.state;
 		const { data } = this.props;
 
-		const tasks : pTask[] = processTasks(data);
+		const tasks : fTask[] = processTasks(data).sort((a,b) => b.duration - a.duration);
 		const total : number = getTotalTime(tasks);
 
 		// Throw Away Color Array ( since we know our final length ), we copy this
-		const colors = ['#08f7af','#304f6e','#12e1dc', '#228bee', '#6fb1f0']
+		// TODO: Generate color based on %
+		const colors = ['#08f7af','#304f6e','#12e1dc', '#228bee', '#6fb1f0'].reverse();
 
 		const fitlerMenuOverLay = (
 			<Menu>
-				<Menu.Item onClick={this.handleFilter} key="0" value={"day"}>Past 24 Hours</Menu.Item>
-				<Menu.Item onClick={this.handleFilter} key="1" value={"week"}>Last 7 Days</Menu.Item>
-				<Menu.Item onClick={this.handleFilter} key="2" value={"m2d"}>Month To Date</Menu.Item>
-				<Menu.Item onClick={this.handleFilter} key="3" value={"y2d"}>Year To Date</Menu.Item>
-				<Menu.Item onClick={this.handleFilter} key="4" value={"all"}>All</Menu.Item>
+				<Menu.Item onClick={this.handleDateFilter} key="0" value={"day"}>Past 24 Hours</Menu.Item>
+				<Menu.Item onClick={this.handleDateFilter} key="1" value={"week"}>Last 7 Days</Menu.Item>
+				<Menu.Item onClick={this.handleDateFilter} key="2" value={"m2d"}>Month To Date</Menu.Item>
+				<Menu.Item onClick={this.handleDateFilter} key="3" value={"y2d"}>Year To Date</Menu.Item>
+				<Menu.Item onClick={this.handleDateFilter} key="4" value={"all"}>All</Menu.Item>
 				<Menu.SubMenu key="sub1" title={<span>Custom Range</span>}>
-					<DatePicker onChange={this.handleDateChange}/>
+					<DatePicker onChange={this.handleDatePicker}/>
 				</Menu.SubMenu>
 			</Menu>
 		);

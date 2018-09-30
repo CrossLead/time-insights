@@ -54,23 +54,23 @@ const { tasks } = require('./tasks.js');
 				"name": "Task 1",
 				"time": 90,
 				"due": "2018-09-25T21:24:49.975Z",
-				"users": {
-					"u1": {
+				"users": [
+					{
 						"duration": 90,
 						"name": "Nathan Douglas"
 					}
-				}
+				]
 			},
 			{
 				"name": "Task 2",
 				"time": 30,
 				"due": "2018-09-29T21:24:49.975Z",
-				"users": {
-					"u2": {
+				"users": [
+					{
 						"duration": 30,
 						"name": "Mark Bradley"
 					}
-				}
+				]
 			}
 		] 
  */
@@ -83,7 +83,7 @@ tasks.forEach(t => {
 	
 	const task = taskMap[t._id];
 	if(task) {
-		taskMap[t._id].time += t.duration;
+		taskMap[t._id].total += t.duration;
 		 //look up user
 		const user = taskMap[t._id].users[t.user._id];
 		if(user) {
@@ -97,13 +97,24 @@ tasks.forEach(t => {
 		// Add new task
 		const userMap = {};
 		userMap[t.user._id] = { duration: t.duration, name: t.user.name };
-		taskMap[t._id] = { due: t.due, name: t.name, time: t.duration, users : userMap};
+		taskMap[t._id] = { due: t.due, name: t.name, total: t.duration, users : userMap};
 	}
 });
 
 
 // Map tasks to an array
-const taskArray = Object.keys(taskMap).map(task_id => taskMap[task_id]);
+const taskArray = Object.keys(taskMap)
+					.map(task_id => {
+						let users = taskMap[task_id].users;
+
+						users = Object.keys(users)
+									.map(user_id => users[user_id])
+									.sort((a,b) => b.duration - a.duration);
+
+						taskMap[task_id].users = users;
+						return taskMap[task_id];
+					})
+					.sort((a,b) => b.total - a.total);
 
 console.log(JSON.stringify(taskArray,null, 2));
 
@@ -111,34 +122,34 @@ console.log(JSON.stringify(taskArray,null, 2));
 /** Helpers? **/
 
 // Get the total duration
-const timeReducer = (acc, c) => acc + c.time;
+const timeReducer = (acc, c) => acc + c.duration;
 taskArray.reduce(timeReducer, 0);
 
 const total = taskArray.reduce(timeReducer, 0);
 
 // console.log('Total time spent: ', total);
 
-// % duration for each task
-const taskPercentContributions = taskArray.map(task => { 
-	return {name: task.name, time: (task.time/total * 100).toFixed(1)};
-});
+// % duration for each task //NO LONGER USED
+// const taskPercentContributions = taskArray.map(task => { 
+// 	return {name: task.name, time: (task.time/total * 100).toFixed(1)};
+// });
 
 // console.log(taskPercentContributions);
 
-// % duration for each task.user
-taskArray.map(task => { 
-	const task_total = task.time;
-	Object.keys(task.users)
-		.map(user_id => task.users[user_id])
-		.forEach(user => {
-			const toPrint = {...user, duration: (user.duration/task_total * 100).toFixed(1)};
-			// console.log(task.name, toPrint);
-		});
-});
+// % duration for each task.user //NO LONGER USED
+// taskArray.map(task => { 
+// 	const task_total = task.time;
+// 	Object.keys(task.users)
+// 		.map(user_id => task.users[user_id])
+// 		.forEach(user => {
+// 			const toPrint = {...user, duration: (user.duration/task_total * 100).toFixed(1)};
+// 			// console.log(task.name, toPrint);
+// 		});
+// });
 
 
 
-/** To get some dummy data**/
+/** To generate dummy "due date" data*/
 // let count = 1;
 // let d;
 // let inter = setInterval(() => {
