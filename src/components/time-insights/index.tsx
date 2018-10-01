@@ -128,13 +128,13 @@ const getTotalTime = (tasks: fTask[]) : number => {
 const generateLegend = (tasks : fTask[], colors: string[], total: number) => {
 	return (
 	<div className="timeInsightsLegend">{
-		tasks.map((t, key) => <div key={key} style={{display: 'inline-block', background: colors.pop(), height: '10px', width: `${(t.duration/total * 100).toFixed(1)}%` }}></div>)
+		tasks.map((t, key) => <div key={key} style={{display: 'inline-block', background: colors.pop(), height: '16px', width: `${(t.duration/total * 100).toFixed(1)}%` }}></div>)
 	}</div>
 	);
 }
 
 /** Task Render Helpers **/
-const generateAvatar = (time : number, total: number, color: string | undefined) => {
+const generateAvatar = (time : number, total: number, color: string | undefined) : JSX.Element => {
 	return (
 		<div className="taskAvatar">
 			<div className="percentTime">{`${Math.floor(time/total * 100)}%`}</div>
@@ -143,12 +143,19 @@ const generateAvatar = (time : number, total: number, color: string | undefined)
 	);
 }
 
-const generateDescription = (users: User[]) : string => {
-	let description = `${users[0].duration/60} hrs by ${users[0].name}`;
+const generateDescription = (users: User[], due: string) : JSX.Element => {
+	let main = `${users[0].duration/60} hr `;
+	let rest =  `by ${users[0].name}`
+	let dueDate = ` || due: ${moment(due).format('MM/DD/YY')}`;
 	if(users.length > 1) {
-		description += `, +${users.length - 1}`;
+		rest += `, +${users.length - 1}`;
 	}
-	return description;
+	return (
+	<div className="descriptionText">
+		<span className="userDuration">{main}</span>
+		{rest}
+		<span className="taskDueDate">{dueDate}</span>
+	</div>)
 }
 
 // Task Render Function
@@ -156,7 +163,7 @@ const task = (total: number, colors: string[]) => (task: fTask) => (
 	<List.Item>
 		<List.Item.Meta
 			title={task.name}
-			description={generateDescription(task.users) + ` || due: ${moment(task.due).format('MMM-DD-YYYY')}`}
+			description={generateDescription(task.users, task.due)}
 			avatar={generateAvatar(task.duration, total, colors.pop())}
 			className="task"
 		/>
@@ -219,21 +226,21 @@ export class TimeInsights extends React.Component<Props, State> {
 	
 		return (
 			<div className="timeInsights">
-				<div className="timeInsightsHeader">
-					<div className="left">
-						<h3>Time Insights</h3>
-						<Dropdown overlay={fitlerMenuOverLay} trigger={['click']}>
-							<Icon className="filter" type="filter" theme="filled"/>
-						</Dropdown>
+				<div className="timeInsightsContainer">
+					<div className="timeInsightsHeader">
+						<div className="left">
+							<h3>Time Insights</h3>
+							<Dropdown overlay={fitlerMenuOverLay} trigger={['click']}>
+								<Icon className="filter" type="filter" theme="filled"/>
+							</Dropdown>
+						</div>
+						<div className="right">
+							<div className="totalHours"><span>{Math.floor(total/60)}</span> hrs logged</div>
+						</div>
 					</div>
-					<div className="right">
-						<div className="totalHours"><span>{Math.floor(total/60)}</span> hrs logged</div>
-					</div>
-				</div>
-				{generateLegend(tasks, colors.map(c => c), total)}
-				<div className="listHeader">
-					<div className="container">
-						<h4>Task's List</h4>
+					{generateLegend(tasks, colors.map(c => c), total)}
+					<div className="listHeader">
+						<h4>Top Task's</h4>
 						<Input.Search
 							className="searchBar"
 							placeholder="Search Tasks"
@@ -241,12 +248,12 @@ export class TimeInsights extends React.Component<Props, State> {
 							style={{ width: 200 }}
 						/>
 					</div>
+					<List
+						itemLayout="horizontal"
+						dataSource={tasks}
+						renderItem={task(total, colors.map(c => c))}
+					/>
 				</div>
-				<List
-					itemLayout="horizontal"
-					dataSource={tasks}
-					renderItem={task(total, colors.map(c => c))}
-				/>
 			</div>
 		)
 	}

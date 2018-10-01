@@ -2,25 +2,32 @@
 	font-family: 'Lato', sans-serif;
 	font-size: 16px;
 	max-width: 640px;
-	padding: 1rem 4rem;
 	background: #f1f3f5;
-	font-weight: bold;
+	margin: 10px auto;
+	border: 1px solid black;
+}
+
+.timeInsightsContainer {
+	padding: 16px;
+}
+
+.timeInsightsContainer > div:nth-child(4) {
+	font-family: 'Lato', sans-serif;
 }
 
 .timeInsightsHeader {
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-between;
-	font-size: 2rem;
-}
-
-.timeInsightsHeader h4 {
-	font-size: 2rem;
+	align-content: center;
+	align-items: center;
+	font-size: 32px;
+	margin: 0 auto 16px auto;
 }
 
 .timeInsightsLegend {
-	padding: 0;
 	margin: 1rem auto;
+	padding: 10px 0;
 }
 
 .filter {
@@ -38,11 +45,17 @@
 	left: 50%;
 }
 
+.left, .right {
+	font-size: 32px;
+	line-height: 32px;
+}
+
 .left {
 	order: 1;
 	display: flex;
 	flex-flow: row nowrap;
-	justify-items: center;
+	align-items: center;
+	align-content: center;
 }
 
 .left h3 {
@@ -55,7 +68,7 @@
 }
 
 .totalHours {
-	font-size: 1rem;
+	font-size: 20px;
 }
 
 .totalHours span {
@@ -64,36 +77,61 @@
 }
 
 .listHeader {
+	margin: 0 auto;
 	display: flex;
-	justify-content: flex-start;
+	align-items: center;
 }
 
 .listHeader h4 {
-	margin: 0 3rem 0 0;
+	margin: 0 6rem 0 0;
 	display: inline-block;
-	font-size: 2rem;
-	line-height: 2rem;
+	font-size: 24px;
+	line-height: 24px;
+	font-weight: bold;
+}
+
+.task > div:nth-child(2) {
+	text-align: left;
+	height: 44px;
+}
+
+.task > div:nth-child(2) h4,
+.task > div:nth-child(2) div {
+	font-size: 20px;
+	margin: 0;
+}
+
+.task > div:nth-child(2) h4 {
+	font-weight: bold;
 }
 
 .taskAvatar {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 }
 
 .taskAvatar .colorTag {
-	margin-left: 0.64rem;
-	width: 0.64rem;
-	height: 3.125rem;
+	margin-left: 5px;
+	width: 0.5rem;
+	height: 44px;
 }
 
 .taskAvatar .percentTime {
-	font-size: 1.32rem;
-	color: black;
-	width: 3.125rem;
-	height: 3.125rem;
-	line-height: 3.125rem;
+	font-size: 24px;
+	font-weight: bold;
+	color: #242424;
+	width: 3rem;
+	height: 44px;
+	line-height: 44px;
 }
 
-.task div:nth-child(2) {
-	text-align: left;
+.userDuration {
+	font-weight: bold;
+}
+
+.ant-list-item {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
