@@ -5,8 +5,8 @@ import './index.css';
 import * as moment from 'moment';
 
 
-/** Shape for "raw" Task (rTask) */
-interface rTask {
+/** Shape for "raw" Task (rawTask) */
+interface rawTask {
 	_id: string,
 	duration: number,
 	name: string,
@@ -17,22 +17,22 @@ interface rTask {
 	}
 }
 
-/** Shape for "intermediate" Task (iTask) */
+/** Shape for "intermediate" Task (intermediateTask) */
 
-interface iTask {
+interface intermediateTask {
 	name: string,
 	duration: number,
 	due: string,
 	users: Map<string, User>;
 }
 
-function isITask(item: iTask | undefined): item is iTask {
+function isIntermediateTask(item: intermediateTask | undefined): item is intermediateTask {
 	return item !== undefined;
 }
 
-/** Shape for "final" Task (fTask) */
+/** Shape for "processed" Task (processedTask) */
 
-interface fTask {
+interface processedTask {
 	name: string,
 	duration: number,
 	due: string,
@@ -58,33 +58,33 @@ const initialState = {
 type State = Readonly<typeof initialState>;
 
 type Props = {
-	data: rTask[];
+	data: rawTask[];
 };
 
 /** Static Methods */
 
-const makeTaskList = (taskMap: Map<string, iTask>) : fTask[] => {
-	const list : fTask[] = [];
+const makeTaskList = (taskMap: Map<string, intermediateTask>) : processedTask[] => {
+	const list : processedTask[] = [];
 	taskMap.forEach(item => {
-		if(isITask(item)) {
+		if(isIntermediateTask(item)) {
 			let userArray : User[] = [];
 			item.users.forEach(user => {
 				userArray.push(user);
 			});
 			userArray.sort((a,b) => b.duration - a.duration);
-			const fTask : fTask = {
+			const processedTask : processedTask = {
 				...item,
 				users: userArray
 			};
-			list.push(fTask);
+			list.push(processedTask);
 		}
 	})
 	return list;
 };
 
-const processTasks = (data: rTask[]) : fTask[] => {
+const processTasks = (data: rawTask[]) : processedTask[] => {
 
-	const taskMap : Map<string, iTask> = new Map<string, iTask>();
+	const taskMap : Map<string, intermediateTask> = new Map<string, intermediateTask>();
 
 	data.forEach(t => {
 		//look up task
@@ -110,7 +110,7 @@ const processTasks = (data: rTask[]) : fTask[] => {
 		}
 	});
 
-	const tasks : fTask[] = makeTaskList(taskMap);
+	const tasks : processedTask[] = makeTaskList(taskMap);
 
 	return tasks;
 }
@@ -118,14 +118,14 @@ const processTasks = (data: rTask[]) : fTask[] => {
 /** HELPERS **/
 
 // Total Time
-const getTotalTime = (tasks: fTask[]) : number => {
-	const timeReducer = (acc : number, c : fTask ) => acc + c.duration;
+const getTotalTime = (tasks: processedTask[]) : number => {
+	const timeReducer = (acc : number, c : processedTask ) => acc + c.duration;
 	const total = tasks.reduce(timeReducer, 0);
 	return total;
 }
 
 // Legend render
-const generateLegend = (tasks : fTask[], colors: string[], total: number) => {
+const generateLegend = (tasks : processedTask[], colors: string[], total: number) => {
 	return (
 	<div className="timeInsightsLegend">{
 		tasks.map((t, key) => <div key={key} style={{display: 'inline-block', background: colors.pop(), height: '16px', width: `${(t.duration/total * 100).toFixed(1)}%` }}></div>)
@@ -159,7 +159,7 @@ const generateDescription = (users: User[], due: string) : JSX.Element => {
 }
 
 // Task Render Function
-const task = (total: number, colors: string[]) => (task: fTask) => (
+const task = (total: number, colors: string[]) => (task: processedTask) => (
 	<List.Item>
 		<List.Item.Meta
 			title={task.name}
@@ -204,7 +204,7 @@ export class TimeInsights extends React.Component<Props, State> {
 		const { dateFilter } = this.state;
 		const { data } = this.props;
 
-		const tasks : fTask[] = processTasks(data).sort((a,b) => b.duration - a.duration);
+		const tasks : processedTask[] = processTasks(data).sort((a,b) => b.duration - a.duration);
 		const total : number = getTotalTime(tasks);
 
 		// Throw Away Color Array ( since we know our final length ), we copy this
