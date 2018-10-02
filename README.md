@@ -14,6 +14,7 @@ The component signature should look something like this:
 4) Aggregate the tasks and show them in order, from highest duration to least duration.
 5) Allow the user to click the filter icon, where a dropdown will be shown and when a selection is made, drives another search that will return a new data set.
 6) The filter dropdown, the list itself, and the calendar popup should be ant-design components.
+7) Allow users to use a text input to filter the list.
 
 This project will include the following technologies:
 
