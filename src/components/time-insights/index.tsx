@@ -1,18 +1,19 @@
 import * as React from 'react';
 import { List, Icon, Input, Dropdown, Menu, DatePicker } from 'antd';
-import * as moment from 'moment';
+import { SelectParam } from 'antd/lib/menu';
 
 import { rawTask, processedTask } from './typedef';
-import { processTasks, renderTask, renderLegend } from './utils/index';
+import { processTasks, applyFilters, renderTask, renderLegend } from './utils';
 import './index.css';
+import { RangePickerValue } from 'antd/lib/date-picker/interface';
 
 /** Shapes for State & Props */
 
 const initialState = {
-	dateFilter : "all",
-	loading: false,
-	searchInput: "",
-	dateString: ""
+	dateFilter: "ALL",
+	dateStrings: ["",""],
+	searchString: "",
+	menuKey: "0"
 }
 
 type State = Readonly<typeof initialState>;
@@ -23,16 +24,17 @@ type Props = Readonly<{
 
 /** setState functions */
 // TODO: implement stubs
-const updateFilter = (prevState: State, event: React.MouseEvent<HTMLElement>) : void => {
+const updateFilter = (dateFilter: string, menuKey: string) => (prevState: State) : State => ({...prevState, dateFilter, menuKey});
 
-}
+const updateSearchTerm = (searchString: string) => (prevState: State) : State => ({...prevState, searchString});
 
-const updateSearchTerm = (prevState: State, searchInput: string) : void =>{
-
-}
-
-const changeDate = (prevState: State, date: moment.Moment, dateString: string) : void => {
-
+const updateCustomDate = (dates: RangePickerValue, dateStrings: [string,string]) => (prevState: State) : State => {
+	return { 
+		...prevState, 
+		dateStrings,
+		dateFilter: "CUSTOM",
+		menuKey: "sub1",
+	};
 }
 
 export class TimeInsights extends React.Component<Props, State> {
@@ -46,36 +48,32 @@ export class TimeInsights extends React.Component<Props, State> {
 	}
 
 	// setState Methods
-	private handleDateFilter = (event: React.MouseEvent<HTMLElement>) => {
-		console.log(event);
-	};
-	private handleSearchInput = (input: string) => {
-		console.log(input)
-	};
-	private handleDatePicker = (date: moment.Moment, dateString: string) => {
-		console.log(date, dateString);
-	};
+	private handleDateFilter = ({item:{props:{value: fitlerString, key: menuKey}}}: SelectParam) => this.setState(updateFilter(fitlerString, menuKey));
+	private handleSearchInput = (input: string) => this.setState(updateSearchTerm(input));
+	private handleRangePicker = (dates: RangePickerValue, dateStrings: [string, string]) => this.setState(updateCustomDate(dates, dateStrings));
 
 	render() {
-		const { dateFilter } = this.state;
+		const {dateFilter, dateStrings, searchString, menuKey} = this.state;
 		const { data } = this.props;
 
 		const tasks : processedTask[] = processTasks(data).sort((a,b) => b.duration - a.duration);
 		const total : number = this.getTotalTime(tasks);
 
-		// Throw Away Color Array ( since we know our final length ), we copy this
+		const toDisplay : processedTask[] = applyFilters(tasks, dateFilter, searchString, dateStrings );
+
+		// Color Array ( for testing ), we copy this
 		// TODO: Generate color based on %
 		const colors = ['#08f7af','#304f6e','#12e1dc', '#228bee', '#6fb1f0'].reverse();
 
 		const fitlerMenuOverLay = (
-			<Menu>
-				<Menu.Item onClick={this.handleDateFilter} key="0" value={"day"}>Past 24 Hours</Menu.Item>
-				<Menu.Item onClick={this.handleDateFilter} key="1" value={"week"}>Last 7 Days</Menu.Item>
-				<Menu.Item onClick={this.handleDateFilter} key="2" value={"m2d"}>Month To Date</Menu.Item>
-				<Menu.Item onClick={this.handleDateFilter} key="3" value={"y2d"}>Year To Date</Menu.Item>
-				<Menu.Item onClick={this.handleDateFilter} key="4" value={"all"}>All</Menu.Item>
+			<Menu onSelect={this.handleDateFilter} selectable={true} defaultSelectedKeys={[menuKey]}>
+				<Menu.Item key="0" value={"ALL"}>All</Menu.Item>
+				<Menu.Item key="1" value={"DAY"}>Past 24 Hours</Menu.Item>
+				<Menu.Item key="2" value={"WEEK"}>Last 7 Days</Menu.Item>
+				<Menu.Item key="3" value={"MONTH"}>Month To Date</Menu.Item>
+				<Menu.Item key="4" value={"YEAR"}>Year To Date</Menu.Item>
 				<Menu.SubMenu key="sub1" title={<span>Custom Range</span>}>
-					<DatePicker onChange={this.handleDatePicker}/>
+					<DatePicker.RangePicker onChange={this.handleRangePicker} format={"MM/DD/YY"}/>
 				</Menu.SubMenu>
 			</Menu>
 		);
@@ -106,7 +104,7 @@ export class TimeInsights extends React.Component<Props, State> {
 					</div>
 					<List
 						itemLayout="horizontal"
-						dataSource={tasks}
+						dataSource={toDisplay}
 						renderItem={renderTask(total, colors.map(c => c))}
 					/>
 				</div>

@@ -100,3 +100,75 @@ export const processTasks = (data: rawTask[]) : processedTask[] => {
 
 	return tasks;
 }
+
+export const applyFilters = (taskArray: processedTask[], dateFilter: string, searchString: string, dateStrings: string[] ) : processedTask[] => {
+	let filtered : processedTask[] = taskArray;
+
+	if(dateFilter ==="DAY") {
+		filtered = taskArray.filter(pastDay);
+	}
+	if(dateFilter ==="WEEK") {
+		filtered = taskArray.filter(pastWeek);
+	}
+	if(dateFilter ==="MONTH") {
+		filtered = taskArray.filter(pastMonth);
+	}
+	if(dateFilter ==="YEAR") {
+		filtered = taskArray.filter(pastYear);
+	}
+	if(dateFilter ==="CUSTOM") {
+		filtered = taskArray.filter(customRange(dateStrings));
+	}
+
+	if(searchString) {
+		filtered = filtered.filter(filterSearchText(searchString));
+	}
+	return filtered;
+}
+
+
+const searchUsers = (searchText: string, users : User[]): boolean => {
+	return users.filter((user) => user.name.indexOf(searchText) >= 0)[0] ? true : false;
+}
+
+const filterSearchText = (searchText: string) => (task: processedTask) : boolean => task.name.indexOf(searchText) >=0 || searchUsers(searchText, task.users);
+
+const pastDay = ({due} : processedTask ): boolean => {
+	const today = moment();
+	const pastDay = moment(today).subtract(24, 'hours');
+	const dueDate = moment(due);
+	if(dueDate < today && dueDate > pastDay) return true;
+	return false;
+}
+
+const pastWeek = ({due} : processedTask ): boolean => {
+	const today = moment()
+	const pastWeek = moment(today).subtract(7, 'days');
+	const dueDate = moment(due);
+	if(dueDate < today && dueDate > pastWeek) return true;
+	return false;
+}
+
+const pastMonth = ({due} : processedTask ): boolean => {
+	const today = moment()
+	const pastMonth = moment(today).subtract(1, 'month');
+	const dueDate = moment(due);
+	if(dueDate < today && dueDate > pastMonth) return true;
+	return false;
+}
+
+const pastYear = ({due} : processedTask ): boolean => {
+	const today = moment()
+	const pastYear = moment(today).subtract(1, 'month');
+	const dueDate = moment(due);
+	if(dueDate <= today && dueDate >= pastYear) return true;
+	return false;
+}
+
+const customRange = (dateRange:  string[]) => ({due} : processedTask): boolean => {
+	const start = moment(dateRange[0]);
+	const end = moment(dateRange[1]);
+	const date = moment(due);
+	if(date <= end && date >= start) return true;
+	return false;
+}
