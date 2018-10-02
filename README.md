@@ -53,3 +53,5 @@ And Design is located at <https://ant.design/>.  Please use version 3.5.1.
 6. The filter dropdown, the list itself, and the calendar popup should be ant-design components.
     * All components are ant-design components
 
+7. Allow users to use a text input to filter the list
+    - Implemented with ant-design Input.Search component, currently users must click the looking glass icon to initiate search
