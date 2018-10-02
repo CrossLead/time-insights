@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   "tasks": [
     {
       "_id": "t1",

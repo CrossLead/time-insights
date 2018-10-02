@@ -2,6 +2,8 @@
 
 const { tasks } = require('./tasks.js');
 
+const moment = require('moment');
+
 /** NOTE:
   I refer to each raw datum as a "Task" and
   each "Task" has contributing "users"
@@ -116,7 +118,7 @@ const taskArray = Object.keys(taskMap)
 					})
 					.sort((a,b) => b.total - a.total);
 
-console.log(JSON.stringify(taskArray,null, 2));
+// console.log(JSON.stringify(taskArray,null, 2));
 
 
 /** Helpers? **/
@@ -162,4 +164,74 @@ const total = taskArray.reduce(timeReducer, 0);
 // 		count++;
 // 	}
 // }, 1000);
+
+/** Filtering */
+
+// const filtered = taskArray.filter();
+
+
+/** Date Filter Functions with Moment */
+
+const pastDay = () => {
+	const today = moment();
+	const pastDay = moment(today).subtract(24, 'hours');
+	const middle = moment(today).subtract(12, 'hours');
+
+	if(middle < today && middle > pastDay) {
+		console.log('PAST DAY:', moment(middle).format('MM-DD-YY'));
+	}
+}
+
+const pastWeek = () => {
+	const today = moment()
+	const pastWeek = moment(today).subtract(7, 'days');
+	const middle = moment(today).subtract(3, 'days');
+
+	if(middle < today && middle > pastWeek) {
+		console.log('PAST WEEK:', moment(middle).format('MM-DD-YY'));
+	}
+}
+
+const pastMonth = () => {
+	const today = moment()
+	const pastMonth = moment(today).subtract(1, 'month');
+	const middle = moment(today).subtract(15, 'days');
+
+	if(middle < today && middle > pastMonth) {
+		console.log('PAST MONTH:', moment(middle).format('MM-DD-YY'));
+	}
+}
+
+const pastYear = () => {
+	const today = moment()
+	const pastYear = moment(today).subtract(1, 'month');
+	const middle = moment(today).subtract(15, 'days');
+
+	if(middle <= today && middle >= pastYear) {
+		console.log('PAST YEAR:', moment(middle).format('MM-DD-YY'));
+	}
+}
+
+const customRange = (dateRange) => (date) => {
+	const start = moment(dateRange[0]);
+	const end = moment(dateRange[1]);
+	const date = moment(date);
+	if(date <= end && date >= start) {
+		return true;
+	}
+	return false;
+}
+
+/** String Filter Function on taskArray */
+
+const searchUsers = (searchText, users) => {
+	return users.filter((user) => user.name.indexOf(searchText) >= 0)[0] ? true : false;
+}
+
+const filterSearchText = (searchText) => (task) => task.name.indexOf(searchText) >=0 || searchUsers(searchText, task.users);
+
+// console.log(JSON.stringify(taskArray,null, 2));
+
+const filtered = taskArray.filter(filterSearchText("Task 1"));
+
 
